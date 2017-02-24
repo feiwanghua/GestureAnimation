@@ -4,13 +4,9 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.LinearGradient;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Point;
-import android.graphics.Rect;
-import android.graphics.Shader;
 import android.os.Handler;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -30,10 +26,10 @@ public class FrontPhotoItem {
     private Bitmap mBitmap;
     private Matrix mMatrix = new Matrix();
     private Paint mPaint=new Paint(Paint.ANTI_ALIAS_FLAG);
-    private Paint mShaderPaint=new Paint(Paint.ANTI_ALIAS_FLAG);
+    //private Paint mShaderPaint=new Paint(Paint.ANTI_ALIAS_FLAG);
     private Point mPoint = new Point();
     private float mRotate = 0;
-    private int mRotatePX = 0;
+    private int mRotatePx = 0;
     private final int X_MIN_PADDING ;
     private final int Y_MIN_PADDING ;
     private final int mSpeed ;
@@ -44,8 +40,8 @@ public class FrontPhotoItem {
     public FrontPhotoItem(Context context, Handler handler, int fstBitmap, int secBitmap, int thrBitmap){
         mContext = context;
         mPaint.setAntiAlias(true);
-        mShaderPaint.setAntiAlias(true);
-        mShaderPaint.setShader(new LinearGradient(0, 0, 0, 50, new int[] {Color.parseColor("#50474744"), Color.parseColor("#30474744"),Color.parseColor("#10474744")}, null, Shader.TileMode.CLAMP));
+        //mShaderPaint.setAntiAlias(true);
+        //mShaderPaint.setShader(new LinearGradient(0, 0, 0, 50, new int[] {Color.parseColor("#50474744"), Color.parseColor("#30474744"),Color.parseColor("#10474744")}, null, Shader.TileMode.CLAMP));
         mBitmap = BitmapFactory.decodeResource(mContext.getResources(),fstBitmap);
         X_MIN_PADDING = DensityUtil.dip2px(mContext, 16);
         Y_MIN_PADDING = DensityUtil.dip2px(mContext, 29);
@@ -68,7 +64,7 @@ public class FrontPhotoItem {
         mPoint.x = (width - mBmpWidth) / 2;
         mPoint.y = (height - mBmpHeight) / 2+Y_MIN_PADDING/2;
         mRotate = 0;
-        mRotatePX = mWidth / 100;
+        mRotatePx = mWidth / 100;
         mScale = ((float) mBmpWidth) / mBitmap.getWidth();
         mSecBackPhotoItem.onMeasure(width, height, mPoint, 1);
         mThrBackPhotoItem.onMeasure(width, height, mSecBackPhotoItem.getPoint(), 2);
@@ -76,15 +72,24 @@ public class FrontPhotoItem {
 
     public void onDraw(Canvas canvas){
         Log.d(TAG, "onDraw");
+        long start = System.currentTimeMillis();
         mThrBackPhotoItem.onDraw(canvas);
+        long end = System.currentTimeMillis();
+        Log.d(TAG, "onDraw 1:"+(end-start));
+        start = System.currentTimeMillis();
         mSecBackPhotoItem.onDraw(canvas);
+        end = System.currentTimeMillis();
+        Log.d(TAG, "onDraw 2:"+(end-start));
+        start = System.currentTimeMillis();
         mMatrix.reset();
         mMatrix.postScale(mScale, mScale);
         mMatrix.postRotate(mRotate, mWidth / 2, mHeight / 2);
         mMatrix.postTranslate(mPoint.x, mPoint.y);
         canvas.drawBitmap(mBitmap, mMatrix, mPaint);
+        end = System.currentTimeMillis();
+        Log.d(TAG, "onDraw 3:"+(end-start));
         //if(isTouchAble()){
-            canvas.drawRect(new Rect(mPoint.x,mPoint.y-DensityUtil.dip2px(mContext,2),mPoint.x+mBmpWidth,mPoint.y),mShaderPaint);
+         //   canvas.drawRect(new Rect(mPoint.x,mPoint.y-DensityUtil.dip2px(mContext,2),mPoint.x+mBmpWidth,mPoint.y),mShaderPaint);
         //}
     }
 
@@ -100,7 +105,7 @@ public class FrontPhotoItem {
     }
 
     public boolean isTouchAble(){
-        return mPoint.x*2 + mBmpWidth == mWidth;
+        return Math.abs(mPoint.x*2 + mBmpWidth - mWidth)<2;
     }
 
     public boolean isFlingOut(){
@@ -119,45 +124,45 @@ public class FrontPhotoItem {
     }
 
     private void updateRotate(){
-        if(mPoint.x<-mRotatePX*19){
+        if(mPoint.x<-mRotatePx *19){
             mRotate = -1;
-        }else if(mPoint.x<-mRotatePX*17){
+        }else if(mPoint.x<-mRotatePx *17){
             mRotate = -2;
-        }else if(mPoint.x<-mRotatePX*15){
+        }else if(mPoint.x<-mRotatePx *15){
             mRotate = -3;
-        }else if(mPoint.x<-mRotatePX*13){
+        }else if(mPoint.x<-mRotatePx *13){
             mRotate = -4;
-        }else if(mPoint.x<-mRotatePX*11){
+        }else if(mPoint.x<-mRotatePx *11){
             mRotate = -5;
-        }else if(mPoint.x<-mRotatePX*5){
+        }else if(mPoint.x<-mRotatePx *5){
             mRotate = -5;
-        }else if(mPoint.x<-mRotatePX*4){
+        }else if(mPoint.x<-mRotatePx *4){
             mRotate = -4;
-        }else if(mPoint.x<-mRotatePX*3){
+        }else if(mPoint.x<-mRotatePx *3){
             mRotate = -3;
-        }else if(mPoint.x<-mRotatePX*2){
+        }else if(mPoint.x<-mRotatePx *2){
             mRotate = -2;
-        }else if(mPoint.x<-mRotatePX){
+        }else if(mPoint.x<-mRotatePx){
             mRotate = -1;
-        }else if(mPoint.x>mWidth - mBmpWidth+mRotatePX*19){
+        }else if(mPoint.x>mWidth - mBmpWidth+ mRotatePx *19){
             mRotate = 1;
-        }else if(mPoint.x>mWidth - mBmpWidth+mRotatePX*17){
+        }else if(mPoint.x>mWidth - mBmpWidth+ mRotatePx *17){
             mRotate = 2;
-        }else if(mPoint.x>mWidth - mBmpWidth+mRotatePX*15){
+        }else if(mPoint.x>mWidth - mBmpWidth+ mRotatePx *15){
             mRotate = 3;
-        }else if(mPoint.x>mWidth - mBmpWidth+mRotatePX*13){
+        }else if(mPoint.x>mWidth - mBmpWidth+ mRotatePx *13){
             mRotate = 4;
-        }else if(mPoint.x>mWidth - mBmpWidth+mRotatePX*11){
+        }else if(mPoint.x>mWidth - mBmpWidth+ mRotatePx *11){
             mRotate = 5;
-        }else if(mPoint.x>mWidth - mBmpWidth+mRotatePX*5){
+        }else if(mPoint.x>mWidth - mBmpWidth+ mRotatePx *5){
             mRotate = 5;
-        }else if(mPoint.x>mWidth - mBmpWidth+mRotatePX*4){
+        }else if(mPoint.x>mWidth - mBmpWidth+ mRotatePx *4){
             mRotate = 4;
-        }else if(mPoint.x>mWidth - mBmpWidth+mRotatePX*3){
+        }else if(mPoint.x>mWidth - mBmpWidth+ mRotatePx *3){
             mRotate = 3;
-        }else if(mPoint.x>mWidth - mBmpWidth+mRotatePX*2){
+        }else if(mPoint.x>mWidth - mBmpWidth+ mRotatePx *2){
             mRotate = 2;
-        }else if(mPoint.x>mWidth - mBmpWidth+mRotatePX){
+        }else if(mPoint.x>mWidth - mBmpWidth+ mRotatePx){
             mRotate = 1;
         }else{
             mRotate=0;

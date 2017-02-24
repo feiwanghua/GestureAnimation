@@ -14,6 +14,8 @@ import android.renderscript.Element;
 import android.renderscript.RenderScript;
 import android.renderscript.ScriptIntrinsicBlur;
 import android.util.Log;
+
+import com.albert.gestureanimation.vateview.BitmapUtil;
 import com.albert.gestureanimation.vateview.DensityUtil;
 import com.albert.gestureanimation.vateview.VoteView;
 
@@ -36,7 +38,6 @@ public class BackPhotoItem {
     private Paint mPaint=new Paint(Paint.ANTI_ALIAS_FLAG);
     private Point mParentPoint = new Point();
     private Point mPoint = new Point();
-    private static ExecutorService mFixedThreadPool;
     private int mThreadStatus = 2;
     private final int THREAD_RUNNER = 1;
     private final int THREAD_FINISH = 2;
@@ -46,16 +47,8 @@ public class BackPhotoItem {
         mHandler = handler;
         mPaint.setAntiAlias(true);
         PADDING = DensityUtil.dip2px(mContext, 10);
-        mBitmap = BitmapFactory.decodeResource(mContext.getResources(),bitmapResources);
-        mBlurBitmap = BitmapFactory.decodeResource(mContext.getResources(),bitmapResources);
-        initBitmap(mBlurBitmap);
-        synchronized (BackPhotoItem.class) {
-            if (mFixedThreadPool == null) {
-                synchronized (BackPhotoItem.class) {
-                    mFixedThreadPool = Executors.newFixedThreadPool(2);
-                }
-            }
-        }
+        mBitmap = BitmapUtil.getBitmap(mContext, bitmapResources);
+        mBlurBitmap = BitmapUtil.getBlurBitmap(mContext, bitmapResources);
     }
 
     public void onMeasure(int width, int height,Point point ,int level) {
@@ -83,36 +76,22 @@ public class BackPhotoItem {
         mBitmap=bitmap;
         mBlurBitmap=blurBitmap;
     }
+
     public void initBitmap(final int bitmapResources){
         if(bitmapResources==-1){
             mBitmap = null;
             mBlurBitmap = null;
         }else {
             mThreadStatus = THREAD_RUNNER;
-            mFixedThreadPool.execute(new Runnable() {
+            VoteView.mFixedThreadPool.execute(new Runnable() {
                 @Override
                 public void run() {
-                    mBitmap = BitmapFactory.decodeResource(mContext.getResources(), bitmapResources);
-                    mBlurBitmap = BitmapFactory.decodeResource(mContext.getResources(), bitmapResources);
-                    initBitmap(mBlurBitmap);
+                    mBitmap = BitmapUtil.getBitmap(mContext, bitmapResources);
+                    mBlurBitmap = BitmapUtil.getBlurBitmap(mContext, bitmapResources);
                     mThreadStatus = THREAD_FINISH;
                     mHandler.sendEmptyMessage(VoteView.PHOTO_UPDATE);
                 }
             });
-        }
-    }
-
-    public void initBitmap(Bitmap bitmap){
-        if (Build.VERSION.SDK_INT > 16) {
-            RenderScript rs = RenderScript.create(mContext);
-            Allocation input = Allocation.createFromBitmap(rs, bitmap, Allocation.MipmapControl.MIPMAP_NONE,
-                    Allocation.USAGE_SCRIPT);
-            Allocation output = Allocation.createTyped(rs, input.getType());
-            ScriptIntrinsicBlur script = ScriptIntrinsicBlur.create(rs, Element.U8_4(rs));
-            script.setRadius(25 /* e.g. 3.f */);
-            script.setInput(input);
-            script.forEach(output);
-            output.copyTo(bitmap);
         }
     }
 

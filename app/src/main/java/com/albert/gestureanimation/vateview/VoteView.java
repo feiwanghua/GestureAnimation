@@ -16,6 +16,8 @@ import com.albert.gestureanimation.vateview.items.FrontPhotoItem;
 import com.albert.gestureanimation.vateview.items.IndexBarItem;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created by feiwh on 2017/2/23.
@@ -24,6 +26,7 @@ import java.util.List;
 public class VoteView extends View{
     private final String TAG = "VoteView";
     private Context mContext;
+    public static ExecutorService mFixedThreadPool = Executors.newFixedThreadPool(2);
     private int mWidth;
     private int mHeight;
     private FrontPhotoItem mFrontPhotoItem;
@@ -31,8 +34,8 @@ public class VoteView extends View{
     private GestureDetector mGestureDetector;
     public final static int PHOTO_UPDATE=100;
     private int mPhotoIndex = 0;
-    private long start;
-    private long end;
+//    private long start;
+//    private long end;
     private Handler mHandler = new Handler(){
         @Override
         public void handleMessage(Message msg) {
@@ -55,6 +58,7 @@ public class VoteView extends View{
         mBitmapList.add( R.drawable.aaaaa);
         mBitmapList.add(R.drawable.c);
         mBitmapList.add( R.drawable.d);
+        mBitmapList.add( R.drawable.en1);
         mBitmapList.add( R.drawable.bbbbb);
         mBitmapList.add( R.drawable.aaaaa);
         mBitmapList.add(R.drawable.c);
@@ -96,7 +100,7 @@ public class VoteView extends View{
     public boolean onTouchEvent(MotionEvent event) {
         Log.d(TAG, "onTouchEvent:"+event.toString());
         if(event.getAction() == MotionEvent.ACTION_UP){
-            mHandler.postDelayed(mRunnable,20);
+            mFixedThreadPool.execute(mRunnable);
         }else{
             if(mPhotoIndex<mBitmapList.size()-2) {
                 mGestureDetector.onTouchEvent(event);
@@ -127,19 +131,19 @@ public class VoteView extends View{
     private Runnable mRunnable = new Runnable() {
         @Override
         public void run() {
-            if(!mFrontPhotoItem.isTouchAble()){
+            while (!mFrontPhotoItem.isTouchAble()){
                 mFrontPhotoItem.updatePosition();
                 postInvalidate();
-                mHandler.removeCallbacks(this);
-                end = System.currentTimeMillis();
-                Log.v(TAG,"time:"+(end-start));
-                mHandler.postDelayed(this,10);
-                start = System.currentTimeMillis();
-            }
-            if(mFrontPhotoItem.isFlingOut()){
-                mHandler.removeCallbacks(this);
-                mFrontPhotoItem.initPhotoItems(mBitmapList.get(mPhotoIndex+2),mPhotoIndex+3==mBitmapList.size());
-                mPhotoIndex++;
+                try {
+                    Thread.sleep(20);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                if(mFrontPhotoItem.isFlingOut()){
+                    mFrontPhotoItem.initPhotoItems(mBitmapList.get(mPhotoIndex+2),mPhotoIndex+3==mBitmapList.size());
+                    mPhotoIndex++;
+                    return;
+                }
             }
         }
     };
