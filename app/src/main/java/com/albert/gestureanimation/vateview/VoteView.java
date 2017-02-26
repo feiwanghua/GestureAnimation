@@ -147,4 +147,38 @@ public class VoteView extends View{
             }
         }
     };
+
+    public void like(){
+        autoPlay(true);
+    }
+
+    public void unLike(){
+        autoPlay(false);
+    }
+
+    private void autoPlay(final boolean like){
+        if(mPhotoIndex+2==mBitmapList.size()){
+            return;
+        }
+        mFixedThreadPool.execute(new Runnable() {
+            @Override
+            public void run() {
+                mFrontPhotoItem.updatePositionAuto(like);
+                while (!mFrontPhotoItem.isTouchAble()){
+                    mFrontPhotoItem.updatePositionAuto(like);
+                    postInvalidate();
+                    try {
+                        Thread.sleep(20);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    if(mFrontPhotoItem.isFlingOut()){
+                        mFrontPhotoItem.initPhotoItems(mBitmapList.get(mPhotoIndex+2),mPhotoIndex+3==mBitmapList.size());
+                        mPhotoIndex++;
+                        return;
+                    }
+                }
+            }
+        });
+    }
 }

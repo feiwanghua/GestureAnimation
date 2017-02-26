@@ -26,7 +26,7 @@ public class FrontPhotoItem {
     private Bitmap mBitmap;
     private Matrix mMatrix = new Matrix();
     private Paint mPaint=new Paint(Paint.ANTI_ALIAS_FLAG);
-    //private Paint mShaderPaint=new Paint(Paint.ANTI_ALIAS_FLAG);
+    private Paint mShaderPaint=new Paint(Paint.ANTI_ALIAS_FLAG);
     private Point mPoint = new Point();
     private float mRotate = 0;
     private int mRotatePx = 0;
@@ -40,7 +40,7 @@ public class FrontPhotoItem {
     public FrontPhotoItem(Context context, Handler handler, int fstBitmap, int secBitmap, int thrBitmap){
         mContext = context;
         mPaint.setAntiAlias(true);
-        //mShaderPaint.setAntiAlias(true);
+        mShaderPaint.setAntiAlias(true);
         //mShaderPaint.setShader(new LinearGradient(0, 0, 0, 50, new int[] {Color.parseColor("#50474744"), Color.parseColor("#30474744"),Color.parseColor("#10474744")}, null, Shader.TileMode.CLAMP));
         mBitmap = BitmapFactory.decodeResource(mContext.getResources(),fstBitmap);
         X_MIN_PADDING = DensityUtil.dip2px(mContext, 16);
@@ -113,59 +113,44 @@ public class FrontPhotoItem {
     }
 
     public void updatePosition(){
-        if(mPoint.x<=mWidth/4&&mPoint.x>=-mWidth/4){
+        int offset = (mWidth-mBmpWidth)/2;
+        if(mPoint.x<=mWidth/4+offset&&mPoint.x>=-mWidth/4+offset){
             mPoint.x = (mWidth - mBmpWidth)/2;
-        }else if(mPoint.x<-mWidth/4){
+        }else if(mPoint.x<-mWidth/4+offset){
             mPoint.x = mPoint.x - mSpeed;
-        }else if(mPoint.x>mWidth/4){
+        }else if(mPoint.x>mWidth/4+offset){
             mPoint.x = mPoint.x + mSpeed;
         }
         updateRotate();
     }
 
-    private void updateRotate(){
-        if(mPoint.x<-mRotatePx *19){
-            mRotate = -1;
-        }else if(mPoint.x<-mRotatePx *17){
-            mRotate = -2;
-        }else if(mPoint.x<-mRotatePx *15){
-            mRotate = -3;
-        }else if(mPoint.x<-mRotatePx *13){
-            mRotate = -4;
-        }else if(mPoint.x<-mRotatePx *11){
-            mRotate = -5;
-        }else if(mPoint.x<-mRotatePx *5){
-            mRotate = -5;
-        }else if(mPoint.x<-mRotatePx *4){
-            mRotate = -4;
-        }else if(mPoint.x<-mRotatePx *3){
-            mRotate = -3;
-        }else if(mPoint.x<-mRotatePx *2){
-            mRotate = -2;
-        }else if(mPoint.x<-mRotatePx){
-            mRotate = -1;
-        }else if(mPoint.x>mWidth - mBmpWidth+ mRotatePx *19){
-            mRotate = 1;
-        }else if(mPoint.x>mWidth - mBmpWidth+ mRotatePx *17){
-            mRotate = 2;
-        }else if(mPoint.x>mWidth - mBmpWidth+ mRotatePx *15){
-            mRotate = 3;
-        }else if(mPoint.x>mWidth - mBmpWidth+ mRotatePx *13){
-            mRotate = 4;
-        }else if(mPoint.x>mWidth - mBmpWidth+ mRotatePx *11){
-            mRotate = 5;
-        }else if(mPoint.x>mWidth - mBmpWidth+ mRotatePx *5){
-            mRotate = 5;
-        }else if(mPoint.x>mWidth - mBmpWidth+ mRotatePx *4){
-            mRotate = 4;
-        }else if(mPoint.x>mWidth - mBmpWidth+ mRotatePx *3){
-            mRotate = 3;
-        }else if(mPoint.x>mWidth - mBmpWidth+ mRotatePx *2){
-            mRotate = 2;
-        }else if(mPoint.x>mWidth - mBmpWidth+ mRotatePx){
-            mRotate = 1;
+    public void updatePositionAuto(boolean like){
+        if(like){
+            mPoint.x = mPoint.x + mSpeed;
         }else{
-            mRotate=0;
+            mPoint.x = mPoint.x - mSpeed;
+        }
+        updateRotate();
+    }
+
+    private void updateRotate(){
+        int offset = mPoint.x-(mWidth-mBmpWidth)/2;
+        if(offset>0){
+            offset = offset - 20*mRotatePx;
+            if(offset > 0 && offset < 30 * mRotatePx){
+                offset = offset - 20 * mRotatePx;
+                mRotate = 10 - Math.abs(offset/(2*mRotatePx));
+            }else{
+                mRotate = 0;
+            }
+        }else{
+            offset = offset + 20*mRotatePx;
+            if(offset < 0 && offset > -30*mRotatePx){
+                offset = offset + 20*mRotatePx;
+                mRotate = Math.abs(offset/(2*mRotatePx)) - 10;
+            }else{
+                mRotate = 0;
+            }
         }
     }
 

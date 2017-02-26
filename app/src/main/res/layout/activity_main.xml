@@ -16,5 +16,19 @@
         android:layout_width="match_parent"
         android:layout_height="100dp"
         android:background="#245242"
-        android:layout_alignParentBottom="true"></LinearLayout>
+        android:layout_alignParentBottom="true">
+
+        <TextView
+            android:id="@+id/tv_like"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="like"/>
+        <TextView
+            android:id="@+id/tv_unlike"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="unlike"/>
+    </LinearLayout>
 </RelativeLayout>
